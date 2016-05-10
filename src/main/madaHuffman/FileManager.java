@@ -1,11 +1,7 @@
 package madaHuffman;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Created by Tobias on 28.04.2016.
@@ -100,23 +96,15 @@ public class FileManager {
             }
         }
 
-      //  byte[] b = new byte[sb.length() / 8];
-        byte[] b = new byte[sb.length()];
-/*
-        for(int i = 0; i < b.length; i++)
-        {
-            String sub = sb.substring(8*i, 8*i+8);
-            b = sub.getBytes(StandardCharsets.UTF_8);
-        }
-*/
-        b = sb.toString().getBytes(StandardCharsets.UTF_8);
+        byte[] b = new byte[sb.length() / 8];
 
         try (FileOutputStream fileOutput = new FileOutputStream("output.dat"))
         {
-       //     for(int i = 0; i < b.length; i++)
-         //   {
-                fileOutput.write(b);
-           // }
+            for(int i = 0; i < b.length; i++)
+            {
+                String sub = sb.substring(8*i, 8*i+8);
+                fileOutput.write(Integer.parseInt(sub));
+            }
             fileOutput.close();
         }
         catch (FileNotFoundException e)
@@ -127,6 +115,5 @@ public class FileManager {
         {
             e.printStackTrace();
         }
-
     }
 }

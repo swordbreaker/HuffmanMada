@@ -22,7 +22,6 @@ public class Huffman {
         countChars();
         generateTree();
         generateTable(rootNode, "");
-        System.out.println("");
     }
 
     private void countChars(){
@@ -105,7 +104,7 @@ public class Huffman {
             centerNode.weight = leftWeight + rightWeight;
             nodelist.add(centerNode);
         }
-        System.out.println(nodelist.get(nodelist.size() - 1));
+      //  System.out.println(nodelist.get(nodelist.size() - 1));
 
         rootNode = nodelist.get(nodelist.size() - 1);
     }
