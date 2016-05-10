@@ -12,13 +12,14 @@ public class Huffman {
     // char | count
     int[][] usedChars = new int[128][2];
     public char[] text;
+    public Node rootNode;
     public HashMap<Character, Integer> huffmanTable;
 
     public Huffman(char[] text){
         this.text = text;
 
         countChars();
-        encode();
+        generateTree();
     }
 
     private void countChars(){
@@ -43,23 +44,29 @@ public class Huffman {
         }
     }
 
-    private void encode(){
+    private void generateTree(){
         Arrays.sort(usedChars, (o1, o2) -> o2[1] - o1[1]);
 
         ArrayList<Node> nodelist = new ArrayList<>();
 
         int i = usedChars.length - 1;
-        while (i >= 0 && usedChars[i][1] > 0){
+        while (i >= 0){
 
             Node centerNode = new Node();
 
-            int j = 0;
-            while (nodelist.size() > 0 && nodelist.get(j).weight < usedChars[i][1] && centerNode.rightNode == null){
+            nodelist.sort((o1, o2) -> o1.weight - o2.weight);
+
+            if(nodelist.size() > 0 && i == 0) {
+                centerNode.leftNode = nodelist.get(0);
+                nodelist.remove(0);
+            }
+
+            while (nodelist.size() > 0 && nodelist.get(0).weight <= usedChars[i][1] && centerNode.rightNode == null){
                 if(centerNode.leftNode == null)
-                    centerNode.leftNode = nodelist.get(j);
+                    centerNode.leftNode = nodelist.get(0);
                 else
-                    centerNode.rightNode = nodelist.get(j);
-                j++;
+                    centerNode.rightNode = nodelist.get(0);
+                nodelist.remove(0);
             }
 
             if(centerNode.leftNode == null){
@@ -74,9 +81,9 @@ public class Huffman {
                 i--;
             }
 
-            centerNode.weight = centerNode.leftNode.weight + (centerNode.rightNode != null ? centerNode.rightNode.weight : 0);
-            if(centerNode.leftNode != null) nodelist.remove(centerNode.leftNode);
-            if(centerNode.rightNode != null) nodelist.remove(centerNode.leftNode);
+            int leftWeight = centerNode.leftNode.weight;
+            int rightWeight = (centerNode.rightNode != null ? centerNode.rightNode.weight : 0);
+            centerNode.weight = leftWeight + rightWeight;
             nodelist.add(centerNode);
         }
 
@@ -90,13 +97,13 @@ public class Huffman {
             j--;
             centerNode.rightNode = nodelist.get(j);
             nodelist.remove(j);
+            int leftWeight = centerNode.leftNode.weight;
+            int rightWeight = (centerNode.rightNode != null ? centerNode.rightNode.weight : 0);
+            centerNode.weight = leftWeight + rightWeight;
             nodelist.add(centerNode);
         }
-
         System.out.println(nodelist.get(nodelist.size() - 1));
 
-//        for(Node node : nodelist){
-//            System.out.println(node);
-//        }
+        rootNode = nodelist.get(nodelist.size() - 1);
     }
 }
