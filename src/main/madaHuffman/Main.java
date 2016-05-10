@@ -5,7 +5,8 @@ package madaHuffman;
  */
 public class Main
 {
-    public static void main(String[] args) {
+    public static void main(String[] args)
+    {
         FileManager fm = new FileManager("test.txt");
 //        for(char c : fm.readFile())
 //        {
@@ -13,5 +14,6 @@ public class Main
 //        }
 
         Huffman huffman = new Huffman(fm.readFile());
+        fm.decodeTableFile(huffman.huffmanTable);
     }
 }

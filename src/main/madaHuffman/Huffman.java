@@ -13,13 +13,16 @@ public class Huffman {
     int[][] usedChars = new int[128][2];
     public char[] text;
     public Node rootNode;
-    public HashMap<Character, Integer> huffmanTable;
+    public HashMap<Character, String> huffmanTable = new HashMap<Character, String>();
 
-    public Huffman(char[] text){
+    public Huffman(char[] text)
+    {
         this.text = text;
 
         countChars();
         generateTree();
+        generateTable(rootNode, "");
+        System.out.println("");
     }
 
     private void countChars(){
@@ -105,5 +108,27 @@ public class Huffman {
         System.out.println(nodelist.get(nodelist.size() - 1));
 
         rootNode = nodelist.get(nodelist.size() - 1);
+    }
+
+    private void generateTable(Node node, String huffCode)
+    {
+        if(node.leftNode != null)
+        {
+            huffCode += "0";
+            generateTable(node.leftNode, huffCode);
+            huffCode = huffCode.substring(0, huffCode.length() -1);
+        }
+
+        if(node.rightNode != null)
+        {
+            huffCode += "1";
+            generateTable(node.rightNode, huffCode);
+            huffCode = huffCode.substring(0, huffCode.length() -1);
+        }
+
+        if(node.content !='\u0000')
+        {
+            huffmanTable.put(node.content, huffCode);
+        }
     }
 }
