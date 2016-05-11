@@ -5,25 +5,38 @@ import java.util.*;
 
 /**
  * Created by Tobias on 28.04.2016.
+ * Developers: Janis, Tobias, Tom
  */
 public class FileManager {
-
-    public String fileName;
+    private String inputFile;
+    private String outputFile;
+    private String decTabFile;
     private char[] array;
 
-    public FileManager(String fileName){
-        this.fileName = fileName;
+    /**
+     * Constructor
+     * @param fileName
+     * @param outputFile
+     * @param decTabFile
+     */
+    public FileManager(String fileName, String outputFile, String decTabFile) {
+        this.inputFile = fileName;
+        this.outputFile = outputFile;
+        this.decTabFile = decTabFile;
     }
 
-    public char[] readFile(){
+    /**
+     * Read the text from the inputfile
+     * @return content of file as char-array
+     */
+    public char[] readFile() {
 
         StringBuilder sb = new StringBuilder();
 
-        try(FileInputStream fileInput = new FileInputStream(fileName)){
-
+        try (FileInputStream fileInput = new FileInputStream(inputFile)) {
             int r;
             while ((r = fileInput.read()) != -1) {
-                sb.append((char)r);
+                sb.append((char) r);
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -37,103 +50,86 @@ public class FileManager {
         return array;
     }
 
-    public void decodeTableFile(HashMap<Character, String> huffmanTable)
-    {
+    /**
+     * Create huffman table
+     * @param huffmanTable
+     */
+    public void decodeTableFile(HashMap<Character, String> huffmanTable) {
         StringBuilder sb = new StringBuilder();
 
         Iterator it = huffmanTable.entrySet().iterator();
 
-        while(it.hasNext())
-        {
-            Map.Entry pair = (Map.Entry)it.next();
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry) it.next();
 
-            char c = (char)pair.getKey();
-            int ascii = (int)c;
+            char c = (char) pair.getKey();
+            int ascii = (int) c;
 
             sb.append(ascii + ":" + pair.getValue() + "-");
         }
 
-        sb.setLength(sb.length()-1);
+        sb.setLength(sb.length() - 1);
 
-        try(PrintWriter fileOutput = new PrintWriter(new FileOutputStream("dec_tab.txt")))
-        {
+        try (PrintWriter fileOutput = new PrintWriter(new FileOutputStream(this.decTabFile))) {
             fileOutput.print(sb);
             fileOutput.close();
-        }
-        catch (FileNotFoundException e)
-        {
+        } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
     }
 
-    public void generateOutput(HashMap<Character, String> huffmanTable)
-    {
+    /**
+     * Encode the text and generate the file with the bytecode
+     * @param huffmanTable
+     */
+    public void generateOutput(HashMap<Character, String> huffmanTable) {
         StringBuilder sb = new StringBuilder();
 
-        for(char c : array)
-        {
+        for (char c : array) {
             Iterator it = huffmanTable.entrySet().iterator();
 
-            while(it.hasNext())
-            {
+            // Search the character (key) in the HashMap and append the value of the key to the String
+            while (it.hasNext()) {
                 Map.Entry pair = (Map.Entry) it.next();
-                char key = (char)pair.getKey();
-                if(key == c)
-                {
+                char key = (char) pair.getKey();
+                if (key == c) {
                     sb.append(huffmanTable.get(key));
                     break;
                 }
             }
         }
 
-        if(sb.length() % 8 != 0)
-        {
+        // Add a 1 if the lenght of the String isnt modulo 8
+        if (sb.length() % 8 != 0) {
             sb.append("1");
 
-            while( sb.length() % 8 != 0)
-            {
+            // Add as many 0 until the String length is modulo 8
+            while (sb.length() % 8 != 0) {
                 sb.append("0");
             }
         }
 
-
-
-        try(PrintWriter fileOutput = new PrintWriter(new FileOutputStream("encText.txt")))
-        {
-            fileOutput.print(sb);
-            fileOutput.close();
-        }
-        catch (FileNotFoundException e)
-        {
-            e.printStackTrace();
-        }
-
-
-
-        try (FileOutputStream fileOutput = new FileOutputStream("output.dat"))
-        {
-            for(int i = 0; i < sb.length() / 8; i++)
-            {
-                String sub = sb.substring(8*i, 8*i+8);
+        // Generate the byte from 8 characters
+        try (FileOutputStream fileOutput = new FileOutputStream(this.outputFile)) {
+            for (int i = 0; i < sb.length() / 8; i++) {
+                String sub = sb.substring(8 * i, 8 * i + 8);
                 int value = Integer.parseInt(sub, 2);
-
-
                 fileOutput.write(value);
             }
             fileOutput.close();
-        }
-        catch (FileNotFoundException e)
-        {
+        } catch (FileNotFoundException e) {
             e.printStackTrace();
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    /**
+     * Read the bytefile and return the encoded text
+     * @return encoded text
+     */
     public String readByteFile() {
-        File file = new File("output.dat");
+        File file = new File(this.outputFile);
         byte[] bFile = new byte[(int) file.length()];
         try {
             FileInputStream fis = new FileInputStream(file);
@@ -147,17 +143,21 @@ public class FileManager {
 
         StringBuilder sb = new StringBuilder();
         int decodeByte;
+        // Transform the bytecode to the encoded text
         for (int i = 0; i < bFile.length; i++) {
             decodeByte = bFile[i];
+            // Force leading zeros if smaller than 8
             String code = String.format("%8s", Integer.toBinaryString(decodeByte % 0xFF)).replace(' ', '0');
+            // Get only the last 8 character. Needed if MSB is 1
             sb.append(code.substring(code.length() - 8));
         }
 
-        //remove the last zeros
+        // Remove the zeros from the tail
         while (sb.substring(sb.length() - 1).equals("0")) {
             sb = new StringBuilder(sb.substring(0, sb.length() - 1));
         }
-        //remove the last one
+
+        // Remove the last one
         if (sb.substring(sb.length() - 1).equals("1")) {
             sb = new StringBuilder(sb.substring(0, sb.length() - 1));
         }
@@ -165,12 +165,16 @@ public class FileManager {
         return sb.toString();
     }
 
+    /**
+     * decode the encoded text and save it into a file
+     * @param codedText
+     */
     public void decodeBitString(String codedText) {
         StringBuilder sb = new StringBuilder();
-        try (FileInputStream fileInput = new FileInputStream("dec_tab.txt")){
+        try (FileInputStream fileInput = new FileInputStream(this.decTabFile)) {
             int r;
             while ((r = fileInput.read()) != -1) {
-                sb.append((char)r);
+                sb.append((char) r);
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -179,38 +183,38 @@ public class FileManager {
         }
 
         String[] huffmanCode = sb.toString().split("-");
+        // keyValue[0] = ascii code, keyValue[1] = Huffman code
         String[] keyValue;
-        int longest = 0;
 
         HashMap<Character, String> huffmanTable = new HashMap<>();
-        for (int i=0; i<huffmanCode.length; i++) {
+        for (int i = 0; i < huffmanCode.length; i++) {
             keyValue = huffmanCode[i].split(":");
             int ascii = Integer.parseInt(keyValue[0]);
-            huffmanTable.put((char)ascii, keyValue[1]);
-
-            if(longest < keyValue[1].length()) {
-                longest = keyValue[1].length();
-            }
+            huffmanTable.put((char) ascii, keyValue[1]);
         }
 
         StringBuilder decodedText = new StringBuilder();
-        Iterator it = huffmanTable.entrySet().iterator();
-        while(longest != 0) {
+        StringBuilder code = new StringBuilder();
+
+        for (int i = 0; i < codedText.length(); i++) {
+            // Create huffman code
+            code.append(codedText.charAt(i));
+            Iterator it = huffmanTable.entrySet().iterator();
+
             while (it.hasNext()) {
                 Map.Entry pair = (Map.Entry) it.next();
-                if(pair.getValue().toString().length() == longest) {
-                    codedText = codedText.replace(pair.getValue().toString(), pair.getKey().toString());
-                    decodedText = new StringBuilder(codedText);
+                // Check if the created huffman code is in the huffman table
+                if (pair.getValue().toString().equals(code.toString())) {
+                    decodedText.append(pair.getKey());
+                    code = new StringBuilder();
                 }
             }
-            longest--;
         }
 
         try (PrintWriter fileOutput = new PrintWriter(new FileOutputStream("decompress.txt"))) {
-            //fileOutput.print(decodedText);
+            fileOutput.print(decodedText);
             fileOutput.close();
-        }
-        catch (FileNotFoundException e) {
+        } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
     }

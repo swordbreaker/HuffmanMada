@@ -6,17 +6,20 @@ import java.util.HashMap;
 
 /**
  * Created by Tobias on 28.04.2016.
+ * Developers: Janis, Tobias, Tom
  */
 public class Huffman {
-
-    // char | count
+    // usedChar [ascii][char | count]
     int[][] usedChars = new int[128][2];
     public char[] text;
     public Node rootNode;
     public HashMap<Character, String> huffmanTable = new HashMap<Character, String>();
 
-    public Huffman(char[] text)
-    {
+    /**
+     * Constructor
+     * @param text
+     */
+    public Huffman(char[] text) {
         this.text = text;
 
         countChars();
@@ -24,12 +27,15 @@ public class Huffman {
         generateTable(rootNode, "");
     }
 
-    private void countChars(){
+    /**
+     * Count how often a Char appeared in the text
+     */
+    private void countChars() {
         int[] countCharsArray = new int[128];
         int diffrentChars = 0;
-        for(int i = 0; i < text.length; i++){
-            countCharsArray[(int)text[i]]++;
-            if(countCharsArray[(int)text[i]] == 1){
+        for (int i = 0; i < text.length; i++) {
+            countCharsArray[(int) text[i]]++;
+            if (countCharsArray[(int) text[i]] == 1) {
                 diffrentChars++;
             }
         }
@@ -37,8 +43,8 @@ public class Huffman {
         usedChars = new int[diffrentChars][2];
 
         int j = 0;
-        for(int i = 0; i < countCharsArray.length; i++){
-            if(countCharsArray[i] > 0){
+        for (int i = 0; i < countCharsArray.length; i++) {
+            if (countCharsArray[i] > 0) {
                 usedChars[j][0] = i;
                 usedChars[j][1] = countCharsArray[i];
                 j++;
@@ -46,39 +52,42 @@ public class Huffman {
         }
     }
 
-    private void generateTree(){
+    /**
+     * Generate the huffman tree
+     */
+    private void generateTree() {
         Arrays.sort(usedChars, (o1, o2) -> o2[1] - o1[1]);
 
         ArrayList<Node> nodelist = new ArrayList<>();
 
         int i = usedChars.length - 1;
-        while (i >= 0){
+        while (i >= 0) {
 
             Node centerNode = new Node();
 
             nodelist.sort((o1, o2) -> o1.weight - o2.weight);
 
-            if(nodelist.size() > 0 && i == 0) {
+            if (nodelist.size() > 0 && i == 0) {
                 centerNode.leftNode = nodelist.get(0);
                 nodelist.remove(0);
             }
 
-            while (nodelist.size() > 0 && nodelist.get(0).weight <= usedChars[i][1] && centerNode.rightNode == null){
-                if(centerNode.leftNode == null)
+            while (nodelist.size() > 0 && nodelist.get(0).weight <= usedChars[i][1] && centerNode.rightNode == null) {
+                if (centerNode.leftNode == null)
                     centerNode.leftNode = nodelist.get(0);
                 else
                     centerNode.rightNode = nodelist.get(0);
                 nodelist.remove(0);
             }
 
-            if(centerNode.leftNode == null){
-                Node leftNode = new Node((char)usedChars[i][0], usedChars[i][1]);
+            if (centerNode.leftNode == null) {
+                Node leftNode = new Node((char) usedChars[i][0], usedChars[i][1]);
                 centerNode.leftNode = leftNode;
                 i--;
             }
 
-            if(i >= 0 && centerNode.rightNode == null){
-                Node rightNode = new Node((char)usedChars[i][0], usedChars[i][1]);
+            if (i >= 0 && centerNode.rightNode == null) {
+                Node rightNode = new Node((char) usedChars[i][0], usedChars[i][1]);
                 centerNode.rightNode = rightNode;
                 i--;
             }
@@ -92,7 +101,7 @@ public class Huffman {
         nodelist.sort((o1, o2) -> o2.weight - o1.weight);
 
         int j = nodelist.size() - 1;
-        while (nodelist.size() > 1){
+        while (nodelist.size() > 1) {
             Node centerNode = new Node();
             centerNode.leftNode = nodelist.get(j);
             nodelist.remove(j);
@@ -104,29 +113,29 @@ public class Huffman {
             centerNode.weight = leftWeight + rightWeight;
             nodelist.add(centerNode);
         }
-      //  System.out.println(nodelist.get(nodelist.size() - 1));
-
         rootNode = nodelist.get(nodelist.size() - 1);
     }
 
-    private void generateTable(Node node, String huffCode)
-    {
-        if(node.leftNode != null)
-        {
+    /**
+     * Creates the huffman code for each character rekursiv
+     * @param node
+     * @param huffCode
+     */
+    private void generateTable(Node node, String huffCode) {
+        if (node.leftNode != null) {
             huffCode += "0";
             generateTable(node.leftNode, huffCode);
-            huffCode = huffCode.substring(0, huffCode.length() -1);
+            huffCode = huffCode.substring(0, huffCode.length() - 1);
         }
 
-        if(node.rightNode != null)
-        {
+        if (node.rightNode != null) {
             huffCode += "1";
             generateTable(node.rightNode, huffCode);
-            huffCode = huffCode.substring(0, huffCode.length() -1);
+            huffCode = huffCode.substring(0, huffCode.length() - 1);
         }
 
-        if(node.content !='\u0000')
-        {
+        // Check if node is rootnode
+        if (node.content != '\u0000') {
             huffmanTable.put(node.content, huffCode);
         }
     }
