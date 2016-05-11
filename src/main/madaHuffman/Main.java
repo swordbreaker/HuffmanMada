@@ -2,7 +2,7 @@ package madaHuffman;
 
 /**
  * Created by Tobias on 28.04.2016.
- * Developers: Janis, Tobias, Tom
+ * Developers: Janis Angst, Tobias Bollinger, Tom Ohme
  */
 public class Main {
     public static void main(String[] args) {
