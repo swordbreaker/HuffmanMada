@@ -96,14 +96,29 @@ public class FileManager {
             }
         }
 
-        byte[] b = new byte[sb.length() / 8];
+
+
+        try(PrintWriter fileOutput = new PrintWriter(new FileOutputStream("encText.txt")))
+        {
+            fileOutput.print(sb);
+            fileOutput.close();
+        }
+        catch (FileNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+
+
 
         try (FileOutputStream fileOutput = new FileOutputStream("output.dat"))
         {
-            for(int i = 0; i < b.length; i++)
+            for(int i = 0; i < sb.length() / 8; i++)
             {
                 String sub = sb.substring(8*i, 8*i+8);
-                fileOutput.write(Integer.parseInt(sub));
+                int value = Integer.parseInt(sub, 2);
+
+
+                fileOutput.write(value);
             }
             fileOutput.close();
         }
