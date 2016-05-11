@@ -33,6 +33,8 @@ public class Huffman {
     private void countChars() {
         int[] countCharsArray = new int[128];
         int diffrentChars = 0;
+
+        //Count chars
         for (int i = 0; i < text.length; i++) {
             countCharsArray[(int) text[i]]++;
             if (countCharsArray[(int) text[i]] == 1) {
@@ -42,6 +44,7 @@ public class Huffman {
 
         usedChars = new int[diffrentChars][2];
 
+        //Save the counted chars in a 2D array
         int j = 0;
         for (int i = 0; i < countCharsArray.length; i++) {
             if (countCharsArray[i] > 0) {
@@ -57,21 +60,23 @@ public class Huffman {
      */
     private void generateTree() {
         Arrays.sort(usedChars, (o1, o2) -> o2[1] - o1[1]);
-
         ArrayList<Node> nodelist = new ArrayList<>();
 
         int i = usedChars.length - 1;
         while (i >= 0) {
-
+            //Generate a Center Node to pair Nodes
             Node centerNode = new Node();
 
+            //Sort the saved node by weight
             nodelist.sort((o1, o2) -> o1.weight - o2.weight);
 
+            //When we are at the last char and we have node which are not connected to the Tree connect it to the left side
             if (nodelist.size() > 0 && i == 0) {
                 centerNode.leftNode = nodelist.get(0);
                 nodelist.remove(0);
             }
 
+            //connect unconnected Nodes when their weight is less or equal than the actual char
             while (nodelist.size() > 0 && nodelist.get(0).weight <= usedChars[i][1] && centerNode.rightNode == null) {
                 if (centerNode.leftNode == null)
                     centerNode.leftNode = nodelist.get(0);
@@ -80,6 +85,7 @@ public class Huffman {
                 nodelist.remove(0);
             }
 
+            //Connect chars when there are free edges
             if (centerNode.leftNode == null) {
                 Node leftNode = new Node((char) usedChars[i][0], usedChars[i][1]);
                 centerNode.leftNode = leftNode;
@@ -92,12 +98,16 @@ public class Huffman {
                 i--;
             }
 
+            //count the weight of the center node
             int leftWeight = centerNode.leftNode.weight;
             int rightWeight = (centerNode.rightNode != null ? centerNode.rightNode.weight : 0);
             centerNode.weight = leftWeight + rightWeight;
+
+            //add the node to the node list. To queue it for connection to the tree.
             nodelist.add(centerNode);
         }
 
+        //if there are nodes left unconnected after we went throw all the chars connect the node here together.
         nodelist.sort((o1, o2) -> o2.weight - o1.weight);
 
         int j = nodelist.size() - 1;
@@ -113,6 +123,8 @@ public class Huffman {
             centerNode.weight = leftWeight + rightWeight;
             nodelist.add(centerNode);
         }
+
+        //get the root node
         rootNode = nodelist.get(nodelist.size() - 1);
     }
 
