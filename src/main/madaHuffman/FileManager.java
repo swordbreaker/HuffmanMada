@@ -116,4 +116,49 @@ public class FileManager {
             e.printStackTrace();
         }
     }
+
+    public void readByteFile() {
+        File file = new File("output.dat");
+        byte[] bFile = new byte[(int) file.length()];
+        try {
+            FileInputStream fis = new FileInputStream(file);
+            fis.read(bFile);
+            fis.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        StringBuilder sb = new StringBuilder();
+        int decodeByte;
+        for (int i=0; i<bFile.length; i++) {
+            //sb.append(String.format("%8s", Integer.toBinaryString(bFile[i] % 0xFF)).replace(' ', '0'));
+            decodeByte = bFile[i];
+            sb.append(Integer.toBinaryString(decodeByte));
+        }
+
+        //remove the last zeros
+        while (sb.substring(sb.length()-1).equals("0")) {
+            sb.substring(0, sb.length() - 1);
+        }
+        //remove the last one
+        if (sb.substring(sb.length()-1).equals("1")) {
+            sb.substring(0, sb.length() - 1);
+        }
+
+        //Bitstring dekotieren
+
+        try (FileOutputStream fileOutput = new FileOutputStream("decompress.txt")) {
+            //fileOutput.write(sb);
+            fileOutput.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println();
+
+    }
 }

@@ -12,5 +12,6 @@ public class Main
         Huffman huffman = new Huffman(fm.readFile());
         fm.decodeTableFile(huffman.huffmanTable);
         fm.generateOutput(huffman.huffmanTable);
+        fm.readByteFile();
     }
 }
