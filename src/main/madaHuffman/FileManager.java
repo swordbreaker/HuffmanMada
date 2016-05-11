@@ -132,7 +132,7 @@ public class FileManager {
         }
     }
 
-    public void readByteFile() {
+    public String readByteFile() {
         File file = new File("output.dat");
         byte[] bFile = new byte[(int) file.length()];
         try {
@@ -147,33 +147,71 @@ public class FileManager {
 
         StringBuilder sb = new StringBuilder();
         int decodeByte;
-        for (int i=0; i<bFile.length; i++) {
-            //sb.append(String.format("%8s", Integer.toBinaryString(bFile[i] % 0xFF)).replace(' ', '0'));
+        for (int i = 0; i < bFile.length; i++) {
             decodeByte = bFile[i];
-            sb.append(Integer.toBinaryString(decodeByte));
+            String code = String.format("%8s", Integer.toBinaryString(decodeByte % 0xFF)).replace(' ', '0');
+            sb.append(code.substring(code.length() - 8));
         }
 
         //remove the last zeros
-        while (sb.substring(sb.length()-1).equals("0")) {
-            sb.substring(0, sb.length() - 1);
+        while (sb.substring(sb.length() - 1).equals("0")) {
+            sb = new StringBuilder(sb.substring(0, sb.length() - 1));
         }
         //remove the last one
-        if (sb.substring(sb.length()-1).equals("1")) {
-            sb.substring(0, sb.length() - 1);
+        if (sb.substring(sb.length() - 1).equals("1")) {
+            sb = new StringBuilder(sb.substring(0, sb.length() - 1));
         }
 
-        //Bitstring dekotieren
+        return sb.toString();
+    }
 
-        try (FileOutputStream fileOutput = new FileOutputStream("decompress.txt")) {
-            //fileOutput.write(sb);
-            fileOutput.close();
+    public void decodeBitString(String codedText) {
+        StringBuilder sb = new StringBuilder();
+        try (FileInputStream fileInput = new FileInputStream("dec_tab.txt")){
+            int r;
+            while ((r = fileInput.read()) != -1) {
+                sb.append((char)r);
+            }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        System.out.println();
+        String[] huffmanCode = sb.toString().split("-");
+        String[] keyValue;
+        int longest = 0;
 
+        HashMap<Character, String> huffmanTable = new HashMap<>();
+        for (int i=0; i<huffmanCode.length; i++) {
+            keyValue = huffmanCode[i].split(":");
+            int ascii = Integer.parseInt(keyValue[0]);
+            huffmanTable.put((char)ascii, keyValue[1]);
+
+            if(longest < keyValue[1].length()) {
+                longest = keyValue[1].length();
+            }
+        }
+
+        StringBuilder decodedText = new StringBuilder();
+        Iterator it = huffmanTable.entrySet().iterator();
+        while(longest != 0) {
+            while (it.hasNext()) {
+                Map.Entry pair = (Map.Entry) it.next();
+                if(pair.getValue().toString().length() == longest) {
+                    codedText = codedText.replace(pair.getValue().toString(), pair.getKey().toString());
+                    decodedText = new StringBuilder(codedText);
+                }
+            }
+            longest--;
+        }
+
+        try (PrintWriter fileOutput = new PrintWriter(new FileOutputStream("decompress.txt"))) {
+            //fileOutput.print(decodedText);
+            fileOutput.close();
+        }
+        catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 }
